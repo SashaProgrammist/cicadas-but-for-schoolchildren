@@ -2,3 +2,4 @@
 API_TOKEN.txt
 /books
 /hash
+/__pycache__

@@ -20,7 +20,7 @@ class Book:
 
         Book.books[self.name] = self
 
-    def get_page(self, index) -> str:
+    def get_page(self, index, id_user) -> str:
         name = f"img_{self.name_file}_{index}_"
 
         result = [f for f in listdir("hash/") if name in f]
@@ -33,4 +33,8 @@ class Book:
 
             result = [f for f in listdir("hash/") if name in f]
 
-        return "hash/" + result[0]
+        result = "hash/" + result[0]
+
+        Book.currents_page[id_user] = result
+
+        return result

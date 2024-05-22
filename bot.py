@@ -39,7 +39,7 @@ async def get_page(message: Message):
         page = int(page)
         image: None | str = None
         try:
-            image = Book.books[book].get_page(page)
+            image = Book.books[book].get_page(page, message.from_user.id)
         except Exception as e:
             logging.error(e)
             print("images file")
@@ -69,6 +69,7 @@ async def impose_template(message: Message):
         else:
             await message.reply("No page loaded. Use /get first.")
     except Exception as e:
+        logging.error(e)
         await message.reply("Usage: /impose <template>")
 
 
