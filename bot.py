@@ -1,16 +1,18 @@
 import asyncio
 import logging
 import sys
-from os import getenv
+from os import getenv, remove
+import cv2
+import numpy as np
 
 from aiogram import Bot, Dispatcher, html
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.filters import CommandStart
-from aiogram.types import Message
+from aiogram.types import Message, FSInputFile, BufferedInputFile
 from aiogram.filters.command import Command
 
-from Book import Book
+from Book import Book, Image
 from Templates import Template
 
 f = open("API_TOKEN.txt", "r")
@@ -35,12 +37,21 @@ async def get_page(message: Message):
     try:
         _, book, page = message.text.split()
         page = int(page)
-        if book in Book.books and 0 <= page < Book.books[book].count_page:
-            Book.currents_page[message.from_user.id] = Book.books[book].get_page(page)
-            await message.reply(f"Page {page} of {book}: {Book.books[book].get_page(page)}")
+        image: None | str = None
+        try:
+            image = Book.books[book].get_page(page)
+        except Exception as e:
+            logging.error(e)
+            print("images file")
+
+        if image:
+            print(image)
+            image_file = FSInputFile(image)
+            await message.reply_photo(image_file, caption=f'Page {page}')
         else:
-            await message.reply("Book or page not found.")
+            await message.reply("Page not found.")
     except Exception as e:
+        logging.error(e)
         await message.reply("Usage: /get <book> <page>")
 
 
@@ -69,7 +80,7 @@ async def main() -> None:
 
 
 def init():
-    Book("Book1", 2)
+    Book("Book1", 2, "B1")
 
     Template("== 0",
              (lambda text: ''.join([char for idx, char in enumerate(text) if idx % 2 == 0])))
