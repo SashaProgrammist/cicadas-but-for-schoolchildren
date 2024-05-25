@@ -45,7 +45,8 @@ async def get_page(message: Message):
             print("images file")
 
         if image:
-            print(image)
+            Book.currents_page[message.from_user.id] = image
+
             image_file = FSInputFile(image)
             await message.reply_photo(image_file, caption=f'Page {page}')
         else:
@@ -60,12 +61,18 @@ async def impose_template(message: Message):
     try:
         template_id = " ".join(message.text.split()[1:])
         if message.from_user.id in Book.currents_page:
-            text = Book.currents_page[message.from_user.id]
+            sours = Book.currents_page[message.from_user.id]
+
             if template_id in Template.templates:
-                modified_text = Template.templates[template_id].temp(text)
-                await message.reply(f"Modified text: {modified_text}")
+                result: str = (Template.templates[template_id]).draw(sours)
+
+                if result:
+                    image_file = FSInputFile(result)
+                    await message.reply_photo(image_file, caption=f'apply {template_id}')
+                else:
+                    await message.reply("Page not found.")
             else:
-                await message.reply("Template not found.")
+                await message.reply("templates not found.")
         else:
             await message.reply("No page loaded. Use /get first.")
     except Exception as e:
@@ -83,10 +90,14 @@ async def main() -> None:
 def init():
     Book("Book1", 2, "B1")
 
-    Template("== 0",
-             (lambda text: ''.join([char for idx, char in enumerate(text) if idx % 2 == 0])))
-    Template("!= 0",
-             (lambda text: ''.join([char for idx, char in enumerate(text) if idx % 2 != 0])))
+    Template("A", [
+            {"offset": (0.0, 0.8), "size": (0.1, 0.05)},  # Rectangle 1
+            {"offset": (0.5, -0.2), "size": (0.15, 0.1)},  # Rectangle 2
+    ])
+    Template("B", [
+            {"offset": (-0.5, -0.2), "size": (0.1, 0.05)},  # Rectangle 3
+            {"offset": (0.0, -0.6), "size": (0.15, 0.1)},  # Rectangle 4
+    ])
 
 
 if __name__ == '__main__':
